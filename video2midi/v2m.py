@@ -4,9 +4,7 @@
 Linux Install:
 sudo apt install python-opencv python-pygame python-midiutil python-opengl
 
-run.sh lalala
-or
-./v2m.py ./mp4s/
+python3 -m video2midi.v2m ./mp4s/example.mp4
 
 Right click first C (left/right/up/down to adjust)
 Click color on colour map, then ctrl+click on color key in video (for white and black keys)
@@ -16,25 +14,67 @@ Q to start
 '''
 
 
+import argparse
+import datetime
+import math
+import ntpath
 import sys
 import os
 import re
+import time
+from os.path import expanduser
 
-filepath=''
-if ( len(sys.argv) < 2 ):
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(MODULE_DIR)
+DEFAULT_CONFIG_PATH = os.path.join(MODULE_DIR, '.v2m.ini')
+DEFAULT_MIDI_DIR = os.path.join(REPO_ROOT, 'midi')
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+  parser = argparse.ArgumentParser(description='Convert a piano video into MIDI.')
+  parser.add_argument('input', nargs='?', help='Video file path or supported URL')
+  parser.add_argument('--output-midi', dest='output_midi', help='Path to the output MIDI file')
+  parser.add_argument('--config', dest='config_path', help='Path to the shared .ini config file')
+  return parser.parse_args(argv)
+
+
+def resolve_input_path(cli_input: str | None) -> str:
+  if cli_input:
+    return cli_input
+
   if sys.platform.startswith('win'):
     from tkinter import Tk
     from tkinter import filedialog as fd
     root=Tk()
     root.withdraw()
-    filepath= fd.askopenfilename(filetypes=(("Video Files", ".mpg .mkv .avi .webm .mp4"),   ("All Files", "*.*")))
+    filepath = fd.askopenfilename(filetypes=(("Video Files", ".mpg .mkv .avi .webm .mp4"),   ("All Files", "*.*")))
     root.destroy()
     print("get file [" + filepath +"]")
-  else:
-    print("halt, no args")
-    sys.exit( 0 )
-else:
-  filepath = sys.argv[1]
+    return filepath
+
+  print("halt, no args")
+  sys.exit( 0 )
+
+
+def default_output_path(path: str) -> str:
+  stem = os.path.splitext(ntpath.basename(path))[0]
+  return os.path.join(DEFAULT_MIDI_DIR, stem + '.mid')
+
+
+def resolve_config_path(cli_config: str | None) -> str:
+  if cli_config:
+    return cli_config
+  if os.path.exists(DEFAULT_CONFIG_PATH):
+    return DEFAULT_CONFIG_PATH
+  if os.path.exists('v2m.ini'):
+    print('local config file exists.')
+    return 'v2m.ini'
+  return os.path.join(expanduser("~"), '.v2m.ini')
+
+
+cli_args = parse_args(sys.argv[1:])
+filepath = resolve_input_path(cli_args.input)
+requested_outputmid = cli_args.output_midi
 
 if not os.path.exists( filepath ):
   has_pytube = False
@@ -61,11 +101,6 @@ if not os.path.exists( filepath ):
     print("file not exists [" + filepath +"], and no pytube has installed..., exit.")
     sys.exit( 0 )
 
-import math
-import ntpath
-import time
-from os.path import expanduser
-
 import cv2
 import pygame
 from midiutil.MidiFile import MIDIFile
@@ -76,11 +111,9 @@ from pygame.locals import *
 print(f'open file [{filepath}]')
 vidcap = cv2.VideoCapture( filepath )
 
-outputmid= os.path.join('midis', os.path.splitext(ntpath.basename( filepath ))[0] + '.mid')
+outputmid = requested_outputmid or default_output_path(filepath)
 
 settingsfile= filepath + '.ini'
-
-import datetime
 
 import video2midi.settings as settings
 from video2midi.gl import *
@@ -254,11 +287,7 @@ line_height = 20
 running = 1
 
 #cfg
-home = expanduser("~")
-inifile = os.path.join( home, '.v2m.ini')
-if os.path.exists( 'v2m.ini' ):
-  inifile="v2m.ini"
-  print("local config file exists.")
+inifile = resolve_config_path(cli_args.config_path)
 
 def update_size() -> None:
   global width, height
@@ -1411,14 +1440,17 @@ def processmidi():
 
  print("saved notes: " + str(notecnt))
 
- os.makedirs('midis', exist_ok=True)
+ output_dir = os.path.dirname(outputmid)
+ if output_dir:
+  os.makedirs(output_dir, exist_ok=True)
 
- #search free id for name ...
- fileid=0
- while os.path.exists( outputmid ):
-  outputmid = os.path.join('midis', os.path.splitext(ntpath.basename( filepath ))[0] + "_"+str(fileid)+ ".mid")
-  fileid+=1
-  if ( fileid > 999 ): break
+ if not requested_outputmid:
+  #search free id for name ...
+  fileid=0
+  while os.path.exists( outputmid ):
+   outputmid = os.path.join(DEFAULT_MIDI_DIR, os.path.splitext(ntpath.basename( filepath ))[0] + "_"+str(fileid)+ ".mid")
+   fileid+=1
+   if ( fileid > 999 ): break
  if prefs.sync_notes_start_pos:
    mf.sync_start_pos(prefs.sync_notes_start_pos_time_delta, False)
 
@@ -1762,6 +1794,5 @@ main()
 if prefs.autoclose == 1:
   reconstruct()
 print ('done...')
-
 
 

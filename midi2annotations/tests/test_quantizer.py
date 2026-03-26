@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from src.quantizer import (
+from midi2annotations.quantizer import (
     load_and_quantize_json,
     normalize_pitch_name,
     quantize_note_events,

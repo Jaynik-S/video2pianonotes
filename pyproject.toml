@@ -1,4 +1,6 @@
 [project]
+name = 'video2pianonotes'
+version = '0.0.0'
 requires-python = '>=3.9'
 [tool.ruff]
 # Target non-EOL releases at minimum, or later if needed

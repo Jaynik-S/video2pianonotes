@@ -21,10 +21,10 @@ Under the hood it runs in two stages:
 python -m pip install -r requirements.txt
 
 # Stage 1: MIDI -> JSON
-python -m src.main inputs/Mariage.MID --output outputs/mariage.json
+python -m midi2annotations.main /path/to/Mariage.MID --output /path/to/mariage.json
 
 # Stage 2: JSON -> ASCII/HTML
-python -m src.main outputs/mariage.json --ascii outputs/mariage.txt --html outputs/mariage.html
+python -m midi2annotations.main /path/to/mariage.json --ascii /path/to/mariage.txt --html /path/to/mariage.html
 ```
 
 Example ASCII system:
@@ -36,15 +36,15 @@ LH:|g#d#f#---c#---g#c| 0:00
 
 ## Project layout
 
-- `src/main.py` exposes both CLIs: MIDI→JSON and JSON→ASCII/HTML.
-- `src/midi_parser.py` loads MIDI data with `pretty_midi` and extracts note-level timing.
-- `src/chord_grouping.py` groups near-simultaneous onsets into deterministic chord groups.
-- `src/hand_inference.py` applies a replaceable RH/LH heuristic.
-- `src/exporter.py` builds and writes the final JSON payload.
-- `src/note_schema.py` defines the dataclasses used across the pipeline.
-- `src/quantizer.py` maps stage-one JSON onto a fixed time grid for aligned rendering.
-- `src/renderer.py` renders aligned ASCII output from the fixed grid.
-- `src/html_renderer.py` renders the same layout as monospaced HTML with octave colors.
+- `midi2annotations/main.py` exposes both CLIs: MIDI→JSON and JSON→ASCII/HTML.
+- `midi2annotations/midi_parser.py` loads MIDI data with `pretty_midi` and extracts note-level timing.
+- `midi2annotations/chord_grouping.py` groups near-simultaneous onsets into deterministic chord groups.
+- `midi2annotations/hand_inference.py` applies a replaceable RH/LH heuristic.
+- `midi2annotations/exporter.py` builds and writes the final JSON payload.
+- `midi2annotations/note_schema.py` defines the dataclasses used across the pipeline.
+- `midi2annotations/quantizer.py` maps stage-one JSON onto a fixed time grid for aligned rendering.
+- `midi2annotations/renderer.py` renders aligned ASCII output from the fixed grid.
+- `midi2annotations/html_renderer.py` renders the same layout as monospaced HTML with octave colors.
 
 ## CLI knobs (the ones you’ll actually tweak)
 
@@ -61,11 +61,11 @@ The stage-one JSON is meant to be easy to consume for downstream renderers.
 - `notes[]`: `pitch_midi`, `pitch_name`, `start_sec`, `end_sec`, `velocity`, `hand`, `chord_id`, plus source fields.
 - `groups[]`: onset clusters with `start_sec`/`end_sec`, the `note_ids`, and the rendered pitch labels.
 
-Schemas live in `src/note_schema.py`.
+Schemas live in `midi2annotations/note_schema.py`.
 
 ## Hand labeling notes
 
-Hand inference is intentionally simple and replaceable (`src/hand_inference.py`):
+Hand inference is intentionally simple and replaceable (`midi2annotations/hand_inference.py`):
 - below the split → `LH`, at/above the split → `RH`
 - mixed-register chords are split low-to-high
 - a neighbor-smoothing pass reduces isolated flips near the split

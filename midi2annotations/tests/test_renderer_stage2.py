@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.quantizer import quantize_note_events
-from src.renderer import format_elapsed_time, render_ascii
+from midi2annotations.quantizer import quantize_note_events
+from midi2annotations.renderer import format_elapsed_time, render_ascii
 
 
 def alignment_payload() -> dict:

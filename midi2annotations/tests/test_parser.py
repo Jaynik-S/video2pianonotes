@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from src.midi_parser import (
+from midi2annotations.midi_parser import (
     InvalidMidiFileError,
     midi_to_pitch_name,
     normalize_notes,
     parse_midi_file,
     sort_notes,
 )
-from src.note_schema import ExtractedNote
+from midi2annotations.note_schema import ExtractedNote
 
 
 def make_extracted_note(

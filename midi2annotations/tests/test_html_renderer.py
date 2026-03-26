@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.html_renderer import render_html
-from src.quantizer import quantize_note_events
+from midi2annotations.html_renderer import render_html
+from midi2annotations.quantizer import quantize_note_events
 
 
 def test_render_html_contains_monospace_layout_and_octave_colors() -> None:

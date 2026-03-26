@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from src.chord_grouping import build_chord_groups
-from src.hand_inference import infer_hands
-from src.note_schema import NoteEvent
+from midi2annotations.chord_grouping import build_chord_groups
+from midi2annotations.hand_inference import infer_hands
+from midi2annotations.note_schema import NoteEvent
 
 
 def make_note(

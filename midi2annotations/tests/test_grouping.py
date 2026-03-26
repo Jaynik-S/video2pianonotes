@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.chord_grouping import build_chord_groups, group_notes_by_onset
-from src.note_schema import NoteEvent
+from midi2annotations.chord_grouping import build_chord_groups, group_notes_by_onset
+from midi2annotations.note_schema import NoteEvent
 
 
 def make_note(

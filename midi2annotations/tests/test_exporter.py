@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 
-from src.exporter import build_export_dict, export_to_json
-from src.note_schema import ChordGroup, NoteEvent, ParseResult, PipelineConfig
+from midi2annotations.exporter import build_export_dict, export_to_json
+from midi2annotations.note_schema import ChordGroup, NoteEvent, ParseResult, PipelineConfig
 
 
 def test_export_dict_contains_metadata_notes_and_groups(tmp_path) -> None:
