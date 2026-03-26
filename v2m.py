@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 
-# by svsd_val
-# jabber : svsd_val@jabber.ru
-# mail to: svsdval@gmail.com
+'''
+Linux Install:
+sudo apt install python-opencv python-pygame python-midiutil python-opengl
+
+run.sh lalala
+or
+./v2m.py ./mp4s/
+
+Right click first C (left/right/up/down to adjust)
+Click color on colour map, then ctrl+click on color key in video (for white and black keys)
+F2 to save settings
+F3 to load settings
+Q to start
+'''
+
 
 import sys
 import os
@@ -64,7 +76,7 @@ from pygame.locals import *
 print(f'open file [{filepath}]')
 vidcap = cv2.VideoCapture( filepath )
 
-outputmid= ntpath.basename( filepath ) + '_output.mid'
+outputmid= os.path.join('midis', os.path.splitext(ntpath.basename( filepath ))[0] + '.mid')
 
 settingsfile= filepath + '.ini'
 
@@ -1399,10 +1411,12 @@ def processmidi():
 
  print("saved notes: " + str(notecnt))
 
+ os.makedirs('midis', exist_ok=True)
+
  #search free id for name ...
  fileid=0
  while os.path.exists( outputmid ):
-  outputmid = ntpath.basename( filepath ) + "_"+str(fileid)+ "_output.mid"
+  outputmid = os.path.join('midis', os.path.splitext(ntpath.basename( filepath ))[0] + "_"+str(fileid)+ ".mid")
   fileid+=1
   if ( fileid > 999 ): break
  if prefs.sync_notes_start_pos:
@@ -1748,3 +1762,6 @@ main()
 if prefs.autoclose == 1:
   reconstruct()
 print ('done...')
+
+
+
