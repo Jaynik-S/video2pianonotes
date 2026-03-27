@@ -11,9 +11,10 @@
 video2pianonotes/
 ├── video2midi/        # video -> MIDI tool
 ├── midi2annotations/  # MIDI -> annotations tool
-├── mp4s/              # input videos
-├── midi/              # intermediate MIDI files
-├── annotations/       # final annotation outputs
+├── data/
+│   ├── videos/        # input videos
+│   ├── midi/          # intermediate MIDI files
+│   └── annotations/   # final annotation outputs
 ├── requirements.txt   # merged pipeline dependencies
 └── run.sh             # unified pipeline entrypoint
 ```
@@ -26,7 +27,7 @@ python3 -m pip install -r requirements.txt
 
 ## Usage
 
-Place a video in `mp4s/`, then run:
+Place a video in `data/videos/`, then run:
 
 ```bash
 ./run.sh <video-name-or-file>
@@ -41,9 +42,9 @@ Examples:
 
 The pipeline writes:
 
-- `midi/<stem>.mid`
-- `annotations/<stem>.json`
-- `annotations/<stem>.txt`
-- `annotations/<stem>.html`
+- `data/midi/<stem>.mid`
+- `data/annotations/<stem>.json`
+- `data/annotations/<stem>.txt`
+- `data/annotations/<stem>.html`
 
 `video2midi` remains interactive. Once you finish the MIDI capture step and the target MIDI exists, the annotations stage runs automatically.

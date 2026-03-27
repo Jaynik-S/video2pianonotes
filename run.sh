@@ -2,6 +2,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+data_dir="$script_dir/data"
 cd "$script_dir"
 
 if [[ -x "$script_dir/.venv/Scripts/python.exe" ]]; then
@@ -25,11 +26,11 @@ if [[ $# -ne 1 ]]; then
 fi
 
 input="$1"
-target="$script_dir/mp4s/$input"
+target="$data_dir/videos/$input"
 
 if [[ ! -f "$target" ]]; then
   for ext in mp4 mkv avi webm mpg; do
-    candidate="$script_dir/mp4s/$input.$ext"
+    candidate="$data_dir/videos/$input.$ext"
     if [[ -f "$candidate" ]]; then
       target="$candidate"
       break
@@ -38,19 +39,19 @@ if [[ ! -f "$target" ]]; then
 fi
 
 if [[ ! -f "$target" ]]; then
-  echo "File not found in $script_dir/mp4s: $input" >&2
+  echo "File not found in $data_dir/videos: $input" >&2
   exit 1
 fi
 
-mkdir -p "$script_dir/midi" "$script_dir/annotations"
+mkdir -p "$data_dir/midi" "$data_dir/annotations"
 
 filename="$(basename "$target")"
 stem="${filename%.*}"
 
-midi_output="$script_dir/midi/$stem.mid"
-json_output="$script_dir/annotations/$stem.json"
-ascii_output="$script_dir/annotations/$stem.txt"
-html_output="$script_dir/annotations/$stem.html"
+midi_output="$data_dir/midi/$stem.mid"
+json_output="$data_dir/annotations/$stem.json"
+ascii_output="$data_dir/annotations/$stem.txt"
+html_output="$data_dir/annotations/$stem.html"
 
 "$python_cmd" -m video2midi.v2m "$target" \
   --output-midi "$midi_output" \

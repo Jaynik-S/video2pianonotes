@@ -4,7 +4,7 @@
 Linux Install:
 sudo apt install python-opencv python-pygame python-midiutil python-opengl
 
-python3 -m video2midi.v2m ./mp4s/example.mp4
+python3 -m video2midi.v2m ./data/videos/example.mp4
 
 Right click first C (left/right/up/down to adjust)
 Click color on colour map, then ctrl+click on color key in video (for white and black keys)
@@ -26,8 +26,9 @@ from os.path import expanduser
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(MODULE_DIR)
+DATA_DIR = os.path.join(REPO_ROOT, 'data')
 DEFAULT_CONFIG_PATH = os.path.join(MODULE_DIR, '.v2m.ini')
-DEFAULT_MIDI_DIR = os.path.join(REPO_ROOT, 'midi')
+DEFAULT_MIDI_DIR = os.path.join(DATA_DIR, 'midi')
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -1794,5 +1795,3 @@ main()
 if prefs.autoclose == 1:
   reconstruct()
 print ('done...')
-
-

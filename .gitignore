@@ -1,10 +1,10 @@
 *.pyc
 __pycache__/
-venv/
+.venv/
 .pytest_cache/
-mp4s/*
-!mp4s/.gitkeep
-midi/*
-!midi/.gitkeep
-annotations/*
-!annotations/.gitkeep
+data/videos/*
+!data/videos/.gitkeep
+data/midi/*
+!data/midi/.gitkeep
+data/annotations/*
+!data/annotations/.gitkeep
