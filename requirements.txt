@@ -3,4 +3,5 @@ opencv-python>=4.2.0.34
 pygame>=2.0.1
 PyOpenGL>=3.1.0
 pretty_midi>=0.2.10
+yt-dlp
 pytest>=8.0.0

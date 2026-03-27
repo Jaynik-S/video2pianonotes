@@ -4,7 +4,7 @@
 Linux Install:
 sudo apt install python-opencv python-pygame python-midiutil python-opengl
 
-python3 -m video2midi.v2m ./data/videos/example.mp4
+python3 -m video2midi.v2m ./data/videos/example.mkv
 
 Right click first C (left/right/up/down to adjust)
 Click color on colour map, then ctrl+click on color key in video (for white and black keys)
@@ -20,7 +20,6 @@ import math
 import ntpath
 import sys
 import os
-import re
 import time
 from os.path import expanduser
 
@@ -33,7 +32,7 @@ DEFAULT_MIDI_DIR = os.path.join(DATA_DIR, 'midi')
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
   parser = argparse.ArgumentParser(description='Convert a piano video into MIDI.')
-  parser.add_argument('input', nargs='?', help='Video file path or supported URL')
+  parser.add_argument('input', nargs='?', help='Video file path')
   parser.add_argument('--output-midi', dest='output_midi', help='Path to the output MIDI file')
   parser.add_argument('--config', dest='config_path', help='Path to the shared .ini config file')
   return parser.parse_args(argv)
@@ -78,29 +77,8 @@ filepath = resolve_input_path(cli_args.input)
 requested_outputmid = cli_args.output_midi
 
 if not os.path.exists( filepath ):
-  has_pytube = False
-
-  try:
-    from pytube import YouTube
-    has_pytube = True
-  except:
-    pass
-
-  if has_pytube:
-    print("Downloading video by url: %s ..." % filepath)
-    yt = YouTube( filepath )
-    videos = [ { 'itag' : i.itag, 'res' : int(re.sub('[^0-9]','', i.resolution)), 'progressive' : int(i.is_progressive) }  for i in yt.streams.filter(file_extension='mp4') if i.mime_type.find("video") != -1 ]
-    print(videos)
-    videos = sorted( videos , key = lambda d : ( -d['progressive'], - d['res']) )
-    print('sorted by progressive (has video & audio in same file) and video resolution')
-    for i in videos:
-      print('processing: %s' % i)
-      filepath = "%s_%s_%s.mp4" % ( re.sub(r'[\W_]','_', yt.title), i['itag'], i['res'])
-      yt.streams.get_by_itag(i['itag']).download( "./" , filepath, skip_existing=True)
-      break
-  else:
-    print("file not exists [" + filepath +"], and no pytube has installed..., exit.")
-    sys.exit( 0 )
+  print("file not exists [" + filepath + "]")
+  sys.exit(1)
 
 import cv2
 import pygame

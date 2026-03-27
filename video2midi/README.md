@@ -52,18 +52,18 @@ yay -S video2midi-git
 
 # Usage
 
-Download the video with your favorite melody (I recommend 720p), launch the program, adjust the keys in it, press Q and after the processing completes a MIDI file will be created.
+Download the video with your favorite melody (I recommend 720p), or use the repo root `run.sh` to fetch it with `yt-dlp`, then launch the program, adjust the keys in it, press Q and after the processing completes a MIDI file will be created.
 
 ##### GNU/Linux:
 ```bash
-python3 -m video2midi.v2m ./synthesia_video.mkv
+python3 -m video2midi.v2m ./data/videos/synthesia_video.mkv
 ```
 
 ##### Windows + Anaconda (Python 3.9+):
   In the Start menu, search for and open Anaconda command prompt:
   ```bash
   cd path to video2pianonotes
-  python -m video2midi.v2m synthesia_video.mkv
+  python -m video2midi.v2m data/videos/synthesia_video.mkv
   ```
 
   Controls:
@@ -143,18 +143,18 @@ pip install midiutil
 
 ## использование
 
- Скачиваем видео с понравившейся мелодией ( рекомендую 720p ) , запускаем программу, в ней регулируем клавиши жмём Q и после завершения работы будет создан midi файл.
+ Скачиваем видео с понравившейся мелодией ( рекомендую 720p ) , либо используем корневой `run.sh`, который скачает ролик через `yt-dlp`, запускаем программу, в ней регулируем клавиши жмём Q и после завершения работы будет создан midi файл.
 
 ##### GNU/Linux:
   ```bash
-  python3 -m video2midi.v2m ./synthesia_video.mkv
+  python3 -m video2midi.v2m ./data/videos/synthesia_video.mkv
   ```
 
 ##### Windows + Anaconda (python 3.9+):
  in start menu search and open Anaconda command prompt:
   ```bash
   cd path to video2pianonotes
-  python -m video2midi.v2m synthesia_video.mkv
+  python -m video2midi.v2m data/videos/synthesia_video.mkv
   ```
 
 ## Управление:

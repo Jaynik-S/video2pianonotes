@@ -27,24 +27,26 @@ python3 -m pip install -r requirements.txt
 
 ## Usage
 
-Place a video in `data/videos/`, then run:
+Pass either a YouTube URL or an existing local video name from `data/videos/`:
 
 ```bash
-./run.sh <video-name-or-file>
+./run.sh <youtube-url-or-local-video>
 ```
 
 Examples:
 
 ```bash
+./run.sh https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ./run.sh my-song
-./run.sh my-song.mp4
+./run.sh my-song.mkv
 ```
 
 The pipeline writes:
 
+- `data/videos/<title>.mkv` for YouTube downloads
 - `data/midi/<stem>.mid`
 - `data/annotations/<stem>.json`
 - `data/annotations/<stem>.txt`
 - `data/annotations/<stem>.html`
 
-`video2midi` remains interactive. Once you finish the MIDI capture step and the target MIDI exists, the annotations stage runs automatically.
+YouTube downloads are handled by `yt-dlp` in the root launcher and are saved into `data/videos/` as `.mkv` files. `video2midi` remains interactive. Once you finish the MIDI capture step and the target MIDI exists, the annotations stage runs automatically.
