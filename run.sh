@@ -29,8 +29,12 @@ input="$1"
 spacing_reduction=""
 if [[ $# -eq 2 ]]; then
   spacing_reduction="$2"
-  if ! [[ "$spacing_reduction" =~ ^[0-9]+$ ]]; then
-    echo "spacing_reduction must be a non-negative integer." >&2
+  if ! [[ "$spacing_reduction" =~ ^-?[0-9]+$ ]]; then
+    echo "spacing_reduction must be an integer." >&2
+    exit 1
+  fi
+  if (( spacing_reduction < 0 )); then
+    echo "spacing_reduction must be 0 or greater." >&2
     exit 1
   fi
 fi
@@ -94,7 +98,7 @@ normalize_for_opencv() {
   local normalized_dir="$videos_dir/.normalized"
   local codec_name=""
   local normalized_path="$normalized_dir/$(basename "$source_video").opencv.mkv"
-  local temp_path="${normalized_path}.tmp.$$"
+  local temp_path=""
 
   require_command ffprobe
   require_command ffmpeg
@@ -112,7 +116,7 @@ normalize_for_opencv() {
     return
   fi
 
-  rm -f "$temp_path"
+  temp_path="$(mktemp "$normalized_dir/$(basename "$source_video").opencv.tmp.XXXXXX.mkv")"
   echo "Creating OpenCV-compatible working copy for $(basename "$source_video")" >&2
 
   if ! ffmpeg \
@@ -124,6 +128,7 @@ normalize_for_opencv() {
     -an \
     -c:v libx264 \
     -pix_fmt yuv420p \
+    -f matroska \
     "$temp_path"; then
     rm -f "$temp_path"
     echo "ffmpeg failed to create an OpenCV-compatible working copy for $source_video" >&2
