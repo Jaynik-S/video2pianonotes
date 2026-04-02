@@ -20,17 +20,33 @@ else
   exit 1
 fi
 
-if [[ $# -ne 1 ]]; then
-  echo "Usage: ./run.sh <youtube-url-or-local-video>" >&2
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  echo "Usage: ./run.sh <youtube-url-or-local-video> [spacing_reduction]" >&2
   exit 1
 fi
 
 input="$1"
+spacing_reduction=""
+if [[ $# -eq 2 ]]; then
+  spacing_reduction="$2"
+  if ! [[ "$spacing_reduction" =~ ^[0-9]+$ ]]; then
+    echo "spacing_reduction must be a non-negative integer." >&2
+    exit 1
+  fi
+fi
+
 videos_dir="$data_dir/videos"
 target=""
 
 is_youtube_url() {
   [[ "$1" =~ ^https?://([[:alnum:]-]+\.)?(youtube\.com|youtu\.be)/ ]]
+}
+
+require_command() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "Required command not found: $1" >&2
+    exit 1
+  fi
 }
 
 download_youtube_video() {
@@ -64,6 +80,90 @@ download_youtube_video() {
   printf '%s\n' "$downloaded_path"
 }
 
+probe_primary_video_codec() {
+  ffprobe \
+    -v error \
+    -select_streams v:0 \
+    -show_entries stream=codec_name \
+    -of default=noprint_wrappers=1:nokey=1 \
+    "$1" 2>/dev/null | head -n 1
+}
+
+normalize_for_opencv() {
+  local source_video="$1"
+  local normalized_dir="$videos_dir/.normalized"
+  local codec_name=""
+  local normalized_path="$normalized_dir/$(basename "$source_video").opencv.mkv"
+  local temp_path="${normalized_path}.tmp.$$"
+
+  require_command ffprobe
+  require_command ffmpeg
+
+  codec_name="$(probe_primary_video_codec "$source_video" | tr '[:upper:]' '[:lower:]')"
+  if [[ -n "$codec_name" && "$codec_name" != "av1" ]]; then
+    printf '%s\n' "$source_video"
+    return
+  fi
+
+  mkdir -p "$normalized_dir"
+
+  if [[ -f "$normalized_path" && "$normalized_path" -nt "$source_video" ]]; then
+    printf '%s\n' "$normalized_path"
+    return
+  fi
+
+  rm -f "$temp_path"
+  echo "Creating OpenCV-compatible working copy for $(basename "$source_video")" >&2
+
+  if ! ffmpeg \
+    -hide_banner \
+    -loglevel error \
+    -y \
+    -i "$source_video" \
+    -map 0:v:0 \
+    -an \
+    -c:v libx264 \
+    -pix_fmt yuv420p \
+    "$temp_path"; then
+    rm -f "$temp_path"
+    echo "ffmpeg failed to create an OpenCV-compatible working copy for $source_video" >&2
+    exit 1
+  fi
+
+  mv -f "$temp_path" "$normalized_path"
+  printf '%s\n' "$normalized_path"
+}
+
+sync_sidecar_to_working_copy() {
+  local original_video="$1"
+  local working_video="$2"
+  local original_sidecar="${original_video}.ini"
+  local working_sidecar="${working_video}.ini"
+
+  if [[ "$original_video" == "$working_video" ]]; then
+    return
+  fi
+
+  if [[ -f "$original_sidecar" && ( ! -f "$working_sidecar" || "$original_sidecar" -nt "$working_sidecar" ) ]]; then
+    cp -f "$original_sidecar" "$working_sidecar"
+  fi
+}
+
+sync_sidecar_from_working_copy() {
+  local original_video="$1"
+  local working_video="$2"
+  local original_sidecar="${original_video}.ini"
+  local working_sidecar="${working_video}.ini"
+
+  if [[ "$original_video" == "$working_video" ]]; then
+    return
+  fi
+
+  if [[ -f "$working_sidecar" && ( ! -f "$original_sidecar" || "$working_sidecar" -nt "$original_sidecar" ) ]]; then
+    cp -f "$working_sidecar" "$original_sidecar"
+  fi
+}
+
 mkdir -p "$videos_dir" "$data_dir/midi" "$data_dir/annotations"
 
 if is_youtube_url "$input"; then
@@ -87,7 +187,12 @@ else
   fi
 fi
 
-filename="$(basename "$target")"
+original_target="$target"
+working_target="$(normalize_for_opencv "$original_target")"
+
+sync_sidecar_to_working_copy "$original_target" "$working_target"
+
+filename="$(basename "$original_target")"
 stem="${filename%.*}"
 
 midi_output="$data_dir/midi/$stem.mid"
@@ -95,9 +200,16 @@ json_output="$data_dir/annotations/$stem.json"
 ascii_output="$data_dir/annotations/$stem.txt"
 html_output="$data_dir/annotations/$stem.html"
 
-"$python_cmd" -m video2midi.v2m "$target" \
+video2midi_status=0
+"$python_cmd" -m video2midi.v2m "$working_target" \
   --output-midi "$midi_output" \
-  --config "$script_dir/video2midi/.v2m.ini"
+  --config "$script_dir/video2midi/.v2m.ini" || video2midi_status=$?
+
+sync_sidecar_from_working_copy "$original_target" "$working_target"
+
+if [[ $video2midi_status -ne 0 ]]; then
+  exit "$video2midi_status"
+fi
 
 if [[ ! -f "$midi_output" ]]; then
   echo "Expected MIDI output was not created: $midi_output" >&2
@@ -105,7 +217,12 @@ if [[ ! -f "$midi_output" ]]; then
 fi
 
 "$python_cmd" -m midi2annotations.main "$midi_output" --output "$json_output"
-"$python_cmd" -m midi2annotations.main "$json_output" --ascii "$ascii_output" --html "$html_output"
+
+render_args=("$json_output" "--ascii" "$ascii_output" "--html" "$html_output")
+if [[ -n "$spacing_reduction" ]]; then
+  render_args+=("--spacing-reduction" "$spacing_reduction")
+fi
+"$python_cmd" -m midi2annotations.main "${render_args[@]}"
 
 echo "Generated:"
 echo "  $midi_output"

@@ -29,15 +29,23 @@ video2pianonotes/
 python3 -m pip install -r requirements.txt
 ```
 
+External tools required for the root pipeline:
+
+- `ffmpeg`
+- `ffprobe`
+
 ---
 
 ## Usage
 
-Pass either a YouTube URL or a local video filename from `data/videos/`:
+Pass either a YouTube URL or a local video filename from `data/videos/`.
+You can optionally provide `spacing_reduction` as the second positional argument for tighter final rendering:
+
 ```bash
 ./run.sh https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ./run.sh my-song
 ./run.sh my-song.mkv
+./run.sh lalaland.mkv 2
 ```
 
 ---
@@ -56,6 +64,7 @@ YouTube URL / local video
 ```
 
 - YouTube downloads are handled by `yt-dlp` and saved to `data/videos/` as `.mkv` files
+- AV1 or otherwise incompatible inputs are transcoded to a hidden OpenCV-friendly cache under `data/videos/.normalized/` when needed
 - `video2midi` is interactive — once you complete the MIDI capture step, the annotations stage runs automatically
 - All outputs are organized under `data/` so nothing is hardcoded
 

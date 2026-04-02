@@ -22,7 +22,7 @@ else
 fi
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 <input.mid|input.json> [--output ...] [--ascii ...] [--html ...]" >&2
+  echo "Usage: $0 <input.mid|input.json> [midi2annotations args such as --output, --ascii, --html, --spacing-reduction]" >&2
   exit 1
 fi
 

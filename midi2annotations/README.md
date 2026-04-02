@@ -21,32 +21,28 @@ Under the hood it runs in two stages:
 python -m pip install -r requirements.txt
 
 # Stage 1: MIDI -> JSON
-python -m src.main inputs/Mariage.MID --output outputs/mariage.json
+python -m midi2annotations.main /path/to/Mariage.MID --output /path/to/Mariage.json
 
 # Stage 2: JSON -> ASCII/HTML
-python -m src.main outputs/mariage.json --ascii outputs/mariage.txt --html outputs/mariage.html
+python -m midi2annotations.main /path/to/Mariage.json --ascii /path/to/Mariage.txt --html /path/to/Mariage.html
+
+# Stage 2 with tighter spacing
+python -m midi2annotations.main /path/to/Mariage.json --ascii /path/to/Mariage.txt --html /path/to/Mariage.html --spacing-reduction 2
 ```
 
-## Sample run with `run.sh`
+## Sample run with `midi2annotations/run.sh`
 
-If your MIDI file is at `inputs/Mariage.MID`, you can run the full pipeline with:
+If your MIDI file is at `/path/to/Mariage.MID`, you can run the local wrapper with:
 
 ```bash
-bash ./run.sh Mariage
+bash ./midi2annotations/run.sh /path/to/Mariage.MID --output /path/to/Mariage.json
+bash ./midi2annotations/run.sh /path/to/Mariage.json --ascii /path/to/Mariage.txt --html /path/to/Mariage.html --spacing-reduction 2
 ```
 
-This will generate:
-
-```text
-outputs/Mariage.json
-outputs/Mariage.txt
-outputs/Mariage.html
-```
-
-You can also pass an optional spacing reduction value for tighter rendered output:
+When used through the repo root pipeline, the optional spacing control is the second positional:
 
 ```bash
-bash ./run.sh Mariage -2
+./run.sh lalaland.mkv 2
 ```
 
 Example ASCII system:
@@ -58,15 +54,15 @@ LH:|g#d#f#---c#---g#c| 0:00
 
 ## Project layout
 
-- `src/main.py` exposes both CLIs: MIDI→JSON and JSON→ASCII/HTML.
-- `src/midi_parser.py` loads MIDI data with `pretty_midi` and extracts note-level timing.
-- `src/chord_grouping.py` groups near-simultaneous onsets into deterministic chord groups.
-- `src/hand_inference.py` applies a replaceable RH/LH heuristic.
-- `src/exporter.py` builds and writes the final JSON payload.
-- `src/note_schema.py` defines the dataclasses used across the pipeline.
-- `src/quantizer.py` maps stage-one JSON onto a fixed time grid for aligned rendering.
-- `src/renderer.py` renders aligned ASCII output from the fixed grid.
-- `src/html_renderer.py` renders the same layout as monospaced HTML with octave colors.
+- `midi2annotations/main.py` exposes both CLIs: MIDI→JSON and JSON→ASCII/HTML.
+- `midi2annotations/midi_parser.py` loads MIDI data with `pretty_midi` and extracts note-level timing.
+- `midi2annotations/chord_grouping.py` groups near-simultaneous onsets into deterministic chord groups.
+- `midi2annotations/hand_inference.py` applies a replaceable RH/LH heuristic.
+- `midi2annotations/exporter.py` builds and writes the final JSON payload.
+- `midi2annotations/note_schema.py` defines the dataclasses used across the pipeline.
+- `midi2annotations/quantizer.py` maps stage-one JSON onto a fixed time grid for aligned rendering.
+- `midi2annotations/renderer.py` renders aligned ASCII output from the fixed grid.
+- `midi2annotations/html_renderer.py` renders the same layout as monospaced HTML with octave colors.
 
 ## CLI knobs (the ones you’ll actually tweak)
 
@@ -74,6 +70,7 @@ LH:|g#d#f#---c#---g#c| 0:00
 - `--hand-split-midi` (MIDI note number): split point for the RH/LH heuristic (default `60` = middle C).
 - `--time-step` (seconds): grid size for rendering; smaller = more columns, higher fidelity.
 - `--system-width` (columns): how wide each wrapped system is in ASCII/HTML.
+- `--spacing-reduction` (integer): extra dash characters removed from eligible empty gaps for tighter output.
 
 ## Output JSON (high level)
 
@@ -83,11 +80,11 @@ The stage-one JSON is meant to be easy to consume for downstream renderers.
 - `notes[]`: `pitch_midi`, `pitch_name`, `start_sec`, `end_sec`, `velocity`, `hand`, `chord_id`, plus source fields.
 - `groups[]`: onset clusters with `start_sec`/`end_sec`, the `note_ids`, and the rendered pitch labels.
 
-Schemas live in `src/note_schema.py`.
+Schemas live in `midi2annotations/note_schema.py`.
 
 ## Hand labeling notes
 
-Hand inference is intentionally simple and replaceable (`src/hand_inference.py`):
+Hand inference is intentionally simple and replaceable (`midi2annotations/hand_inference.py`):
 - below the split → `LH`, at/above the split → `RH`
 - mixed-register chords are split low-to-high
 - a neighbor-smoothing pass reduces isolated flips near the split
