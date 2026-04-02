@@ -52,11 +52,19 @@ def run_render_pipeline(
 
     outputs: dict[str, str] = {}
     if ascii_output_path is not None:
-        ascii_text = render_ascii(score, system_width=effective_config.system_width)
+        ascii_text = render_ascii(
+            score,
+            system_width=effective_config.system_width,
+            spacing_reduction=effective_config.spacing_reduction,
+        )
         _write_text_output(ascii_output_path, ascii_text)
         outputs["ascii"] = ascii_text
     if html_output_path is not None:
-        html_text = render_html(score, system_width=effective_config.system_width)
+        html_text = render_html(
+            score,
+            system_width=effective_config.system_width,
+            spacing_reduction=effective_config.spacing_reduction,
+        )
         _write_text_output(html_output_path, html_text)
         outputs["html"] = html_text
     return outputs
@@ -111,6 +119,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=50,
         help="Number of logical columns per wrapped system in ASCII/HTML rendering",
     )
+    parser.add_argument(
+        "--spacing-reduction",
+        type=int,
+        default=0,
+        help="Additional dash characters to remove from each eligible empty gap run",
+    )
     return parser
 
 
@@ -138,9 +152,12 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if input_path.suffix.lower() == ".json":
+            if args.spacing_reduction < 0:
+                raise ValueError("--spacing-reduction must be non-negative")
             render_config = RenderConfig(
                 time_step_sec=args.time_step,
                 system_width=args.system_width,
+                spacing_reduction=args.spacing_reduction,
             )
             outputs = run_render_pipeline(
                 args.input,
@@ -172,4 +189,3 @@ def _write_text_output(path: str | Path, content: str) -> None:
 
 if __name__ == "__main__":
     sys.exit(main())
-

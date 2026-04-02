@@ -5,7 +5,7 @@ from __future__ import annotations
 from html import escape
 
 from .quantizer import QuantizedScore
-from .renderer import ColumnCell, build_render_systems, format_elapsed_time
+from .renderer import ColumnCell, build_render_systems_with_spacing, format_elapsed_time
 
 
 OCTAVE_COLORS = {
@@ -24,10 +24,18 @@ LINE_WRAPPER_STYLE = (
 )
 
 
-def render_html(score: QuantizedScore, system_width: int = 50) -> str:
+def render_html(
+    score: QuantizedScore,
+    system_width: int = 50,
+    spacing_reduction: int = 0,
+) -> str:
     """Render the quantized score into standalone HTML."""
 
-    systems = build_render_systems(score, system_width=system_width)
+    systems = build_render_systems_with_spacing(
+        score,
+        system_width=system_width,
+        spacing_reduction=spacing_reduction,
+    )
     blank_line = f'    <div style="{LINE_WRAPPER_STYLE}">&#8203;</div>'
     line_markup = f"\n{blank_line}\n".join(_render_html_system_lines(system) for system in systems)
 

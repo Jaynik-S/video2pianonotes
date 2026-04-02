@@ -20,6 +20,7 @@ class RenderConfig:
 
     time_step_sec: float = 0.05
     system_width: int = 50
+    spacing_reduction: int = 0
 
 
 @dataclass(frozen=True)

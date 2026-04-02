@@ -43,9 +43,20 @@ def build_hand_sequence(
 
 def build_render_systems(score: QuantizedScore, system_width: int) -> list[RenderSystem]:
     """Split the full score into wrapped systems with shared RH/LH column widths."""
+    return build_render_systems_with_spacing(score, system_width=system_width, spacing_reduction=0)
+
+
+def build_render_systems_with_spacing(
+    score: QuantizedScore,
+    system_width: int,
+    spacing_reduction: int = 0,
+) -> list[RenderSystem]:
+    """Split the full score into wrapped systems with shared RH/LH column widths."""
 
     if system_width <= 0:
         raise ValueError("system_width must be greater than zero")
+    if spacing_reduction < 0:
+        raise ValueError("spacing_reduction must be non-negative")
 
     total_columns = score.total_columns
     if total_columns == 0:
@@ -71,7 +82,14 @@ def build_render_systems(score: QuantizedScore, system_width: int) -> list[Rende
             max(len(rh_cell.token), len(lh_cell.token), 1)
             for rh_cell, lh_cell in zip(rh_chunk, lh_chunk)
         )
-        widths = tuple(_compact_empty_run_widths(rh_chunk, lh_chunk, base_widths))
+        widths = tuple(
+            _compact_empty_run_widths(
+                rh_chunk,
+                lh_chunk,
+                base_widths,
+                spacing_reduction=spacing_reduction,
+            )
+        )
         end_time_sec = (start + len(rh_chunk)) * score.time_step_sec
         if duration_sec is not None:
             end_time_sec = min(end_time_sec, duration_sec)
@@ -87,10 +105,14 @@ def build_render_systems(score: QuantizedScore, system_width: int) -> list[Rende
     return systems
 
 
-def render_ascii(score: QuantizedScore, system_width: int = 50) -> str:
+def render_ascii(score: QuantizedScore, system_width: int = 50, spacing_reduction: int = 0) -> str:
     """Render the quantized score into wrapped ASCII notation."""
 
-    systems = build_render_systems(score, system_width=system_width)
+    systems = build_render_systems_with_spacing(
+        score,
+        system_width=system_width,
+        spacing_reduction=spacing_reduction,
+    )
     blocks: list[str] = []
     for system in systems:
         rh_line = _render_ascii_line("RH", system.rh_cells, system.cell_widths)
@@ -135,6 +157,7 @@ def _compact_empty_run_widths(
     rh_cells: tuple[ColumnCell, ...],
     lh_cells: tuple[ColumnCell, ...],
     base_widths: tuple[int, ...],
+    spacing_reduction: int = 0,
 ) -> list[int]:
     widths = list(base_widths)
     occupancy = [bool(rh_cell.notes or lh_cell.notes) for rh_cell, lh_cell in zip(rh_cells, lh_cells)]
@@ -157,6 +180,13 @@ def _compact_empty_run_widths(
         is_trailing_run = run_start > last_occupied_index
         if (is_leading_run or not is_trailing_run) and widths[run_start] > 0:
             widths[run_start] -= 1
+            extra_reduction = spacing_reduction
+            reduction_index = run_start + 1
+            while extra_reduction > 0 and reduction_index < index:
+                reducible = min(widths[reduction_index], extra_reduction)
+                widths[reduction_index] -= reducible
+                extra_reduction -= reducible
+                reduction_index += 1
 
     return widths
 
