@@ -6,5 +6,3 @@ data/videos/*
 !data/videos/.gitkeep
 data/midi/*
 !data/midi/.gitkeep
-data/annotations/*
-!data/annotations/.gitkeep

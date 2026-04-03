@@ -1,0 +1,76 @@
+{
+  "notes": [
+    {
+      "id": 0,
+      "pitch_midi": 58,
+      "pitch_name": "A#3",
+      "start_sec": 55.755208,
+      "end_sec": 55.855208,
+      "duration_sec": 0.1,
+      "velocity": 100,
+      "hand": "LH",
+      "chord_id": 0,
+      "track_index": 0,
+      "instrument_index": 0,
+      "instrument_name": "Acoustic Grand Piano",
+      "onset_rank": 0,
+      "metadata": {
+        "is_drum": false
+      }
+    },
+    {
+      "id": 1,
+      "pitch_midi": 58,
+      "pitch_name": "A#3",
+      "start_sec": 55.755208,
+      "end_sec": 55.855208,
+      "duration_sec": 0.1,
+      "velocity": 100,
+      "hand": "LH",
+      "chord_id": 0,
+      "track_index": 1,
+      "instrument_index": 1,
+      "instrument_name": "Acoustic Grand Piano",
+      "onset_rank": 0,
+      "metadata": {
+        "is_drum": false
+      }
+    }
+  ],
+  "groups": [
+    {
+      "chord_id": 0,
+      "start_sec": 55.755208,
+      "end_sec": 55.855208,
+      "duration_sec": 0.1,
+      "note_ids": [
+        0,
+        1
+      ],
+      "pitches_midi": [
+        58,
+        58
+      ],
+      "pitches": [
+        "A#3",
+        "A#3"
+      ],
+      "hand": "LH",
+      "size": 2
+    }
+  ],
+  "metadata": {
+    "source_file": "sosick.mid",
+    "source_path": "/home/jay03/proj/video2pianonotes/data/midi/sosick.mid",
+    "tempo_estimate_bpm": null,
+    "initial_tempo_bpm": 120.0,
+    "duration_sec": 55.855208,
+    "instrument_count": 2,
+    "is_likely_piano_only": true,
+    "ignored_drum_tracks": false,
+    "note_count": 2,
+    "group_count": 1,
+    "group_tolerance_sec": 0.03,
+    "hand_split_midi": 60
+  }
+}
